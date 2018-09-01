@@ -15,7 +15,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 class WebHookHandler(tornado.web.RequestHandler):
     def get(self):
-        return 200
+        pass
     
     def post(self):
         signature = json.load(self.request.headers['X-Line-Signature'])
@@ -34,9 +34,7 @@ class WebHookHandler(tornado.web.RequestHandler):
                 TextSendMessage(text=event.message.text)
             )
 
-application = tornado.web.Application([(r'/callback',WebHookHandler),],{
-        #'debug':True
-        })
+application = tornado.web.Application([(r'/callback',WebHookHandler)])
 
 if __name__ == '__main__':
     ch_id = os.environ['Channel_ID']
