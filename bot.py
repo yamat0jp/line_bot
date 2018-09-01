@@ -33,6 +33,7 @@ class WebHookHandler(tornado.web.RequestHandler):
                 event.reply_token,
                 TextSendMessage(text=event.message.text)
             )
+        self.set_status(200)
 
 application = tornado.web.Application([(r'/callback',WebHookHandler)])
 
