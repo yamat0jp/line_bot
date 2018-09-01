@@ -27,9 +27,10 @@ class WebHookHandler(tornado.web.RequestHandler):
             if not isinstance(event.message,TextMessage):
                 continue
             linebot.reply_message(
-                event.rply_token,
+                event.reply_token,
                 TextSendMessage(text=event.message.text)
             )
+        return 'OK'
 
 application = tornado.web.Application([(r'/callback',WebHookHandler)],{
         #'debug':True
