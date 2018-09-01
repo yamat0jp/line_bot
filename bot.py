@@ -8,7 +8,7 @@ Created on Sat Sep  1 11:18:39 2018
 import tornado.ioloop
 import tornado.web
 import json, os
-from linebot import LineBotApi, WebhookHandler
+from linebot import LineBotApi, WebhookParser, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
@@ -18,7 +18,7 @@ class WebHookHandler(tornado.web.RequestHandler):
         signature = json.load(self.request.headers['X-Line-Signature'])
         data = json.load(self.request.body)
         try:
-            events = webhook.handle(data, signature)
+            events = webhook.parse(data, signature)
         except InvalidSignatureError:
             raise tornado.web.HTTPError(400)
             return
@@ -36,9 +36,9 @@ class WebHookHandler(tornado.web.RequestHandler):
 application = tornado.web.Application([(r'/callback',WebHookHandler)])
 
 if __name__ == '__main__':
-    token = os.environ['Channel_ID']
+    token = os.environ['Access_Token']
     ch = os.environ['Channel_Secret']
     linebot = LineBotApi(token)
-    webhook = WebhookHandler(ch)  
+    webhook = WebhookParser(ch)  
     application.listen(5000)
     tornado.ioloop.IOLoop.instance().start()
