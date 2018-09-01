@@ -7,7 +7,7 @@ Created on Sat Sep  1 11:18:39 2018
 
 import tornado.ioloop
 import tornado.web
-import json, os
+import json, os, hmac, base64, hashlib
 from linebot import LineBotApi, WebhookParser, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
@@ -15,10 +15,13 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 class WebHookHandler(tornado.web.RequestHandler):    
     def post(self):
-        signature = json.load(self.request.headers['X-Line-Signature'])
-        data = json.load(self.request.body)
+        header = json.load(self.request.headers['X-Line-Signature'])
+        body = json.load(self.request.body)
+        hash = hmac.new(header.encode('utf-8'),
+            body.encode('utf-8'), hashlib.sha256).digest()
+        signature = base64.b64encode(hash)
         try:
-            events = webhook.parse(data, signature)
+            events = webhook.parse(body, signature)
         except InvalidSignatureError:
             raise tornado.web.HTTPError(400)
             return
