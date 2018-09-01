@@ -15,7 +15,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 class WebHookHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write('OK')
+        return 200
     
     def post(self):
         signature = json.load(self.request.headers['X-Line-Signature'])
@@ -23,7 +23,7 @@ class WebHookHandler(tornado.web.RequestHandler):
         try:
             events = webhook.parse(data, signature)
         except InvalidSignatureError:
-            self.abort(400)
+            raise tornado.web.HTTPError(400)
         for event in events:
             if not isinstance(event,MessageEvent):
                 continue
@@ -33,7 +33,6 @@ class WebHookHandler(tornado.web.RequestHandler):
                 event.reply_token,
                 TextSendMessage(text=event.message.text)
             )
-        self.write('OK')
 
 application = tornado.web.Application([(r'/callback',WebHookHandler),],{
         #'debug':True
