@@ -35,8 +35,12 @@ class WebHookHandler(tornado.web.RequestHandler):
                 TextSendMessage(text=event.message.text)
             )
         self.set_status(200)
+        
+class DummyHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write('OK')
 
-application = tornado.web.Application([(r'/callback',WebHookHandler)])
+application = tornado.web.Application([(r'/callback',WebHookHandler),(r'/',DummyHandler)])
 
 if __name__ == '__main__':
     token = os.environ['Access_Token']
