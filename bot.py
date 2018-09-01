@@ -14,6 +14,9 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 
 class WebHookHandler(tornado.web.RequestHandler):
+    def get(self):
+        return 'OK'
+    
     def post(self):
         signature = json.load(self.request.headers['X-Line-Signature'])
         data = json.load(self.request.body)
