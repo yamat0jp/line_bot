@@ -20,11 +20,14 @@ class WebHookHandler(tornado.web.RequestHandler):
         hash = hmac.new(header.encode('utf-8'),
             body.encode('utf-8'), hashlib.sha256).digest()
         signature = base64.b64encode(hash)
+        events = webhook.parse(body, signature)
+        '''
         try:
             events = webhook.parse(body, signature)
         except InvalidSignatureError:
             raise tornado.web.HTTPError(400)
             return
+        '''
         for event in events:
             if not isinstance(event, MessageEvent):
                 continue
@@ -34,7 +37,6 @@ class WebHookHandler(tornado.web.RequestHandler):
                 event.reply_token,
                 TextSendMessage(text=event.message.text)
             )
-        self.set_status(200)
         
 class DummyHandler(tornado.web.RequestHandler):
     def get(self):
