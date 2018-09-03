@@ -8,7 +8,7 @@ Created on Sat Sep  1 11:18:39 2018
 import tornado.ioloop
 import tornado.web
 import tornado.escape
-import json, os, hmac, base64, hashlib
+import json, os, hmac, base64, hashlib, pytz
 from datetime import datetime
 from linebot import LineBotApi, WebhookParser, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -17,9 +17,10 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 class WebHookHandler(tornado.web.RequestHandler):   
     def get(self):
-        t = datetime.now().hour
+        pz = pytz.timezone('Asia/Tokyo')
+        t = datetime.now(pz).hour
         if (t >= 9)and(t < 16):
-            self.write(u'仕事中.'+str(t))
+            self.write(u'仕事中.'+str(datetime.now()))
         else:
             self.write(str(t))
         
