@@ -7,27 +7,34 @@ Created on Sat Sep  1 11:18:39 2018
 
 import tornado.ioloop
 import tornado.web
+import tornado.escape
 import json, os, hmac, base64, hashlib
+from datetime import datetime
 from linebot import LineBotApi, WebhookParser, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 
-class WebHookHandler(tornado.web.RequestHandler):    
+class WebHookHandler(tornado.web.RequestHandler):   
+    def get(self):
+        t = datetime.now().hour
+        if (t >= 9)and(t < 16):
+            self.write(u'仕事中.'+str(t))
+        else:
+            self.write(str(t))
+        
     def post(self):
-        header = json.load(self.request.headers['X-Line-Signature'])
+        header = json.load(self.request.headers)
         body = json.load(self.request.body)
-        hash = hmac.new(header.encode('utf-8'),
+        hash = hmac.new(header['X-Line-Signature'].encode('utf-8'),
             body.encode('utf-8'), hashlib.sha256).digest()
         signature = base64.b64encode(hash)
-        events = webhook.parse(body, signature)
         '''
         try:
             events = webhook.parse(body, signature)
         except InvalidSignatureError:
             raise tornado.web.HTTPError(400)
             return
-        '''
         for event in events:
             if not isinstance(event, MessageEvent):
                 continue
@@ -37,6 +44,8 @@ class WebHookHandler(tornado.web.RequestHandler):
                 event.reply_token,
                 TextSendMessage(text=event.message.text)
             )
+        '''
+        self.write(header)
         
 class DummyHandler(tornado.web.RequestHandler):
     def get(self):
