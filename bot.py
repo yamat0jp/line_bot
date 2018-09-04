@@ -33,17 +33,18 @@ class WebHookHandler(tornado.web.RequestHandler):
         no = 'SF'
         item = table.find({'no':no})
         if item.count() == 1:
-            dic = {item['name']:item['no']}
+            x = table.find_one({'no':no})
+            dic = {x['name']:x['no']}
         elif item.count() == 0:
             dic = {}
-            for x in list(item.sort('no')):
+            for x in table.find().sort('no'):
                 dic[x['name']] = x['no']
         else:
             item = table.find({'no':re.compile(no)})
             dic = {}
-            for x in list(item.sort('no')):
-                dic[x.name] = x['no']
-        self.write(dic)
+            for x in item.sort('no'):
+                dic[x['name']] = x['no']
+        self.write(json.dump(dic, ensure_ascii=False))
         
     def post(self):
         header = json.load(self.request.headers)
@@ -71,9 +72,26 @@ class WebHookHandler(tornado.web.RequestHandler):
         
 class DummyHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write('OK')
+        f = open('data.txt')
+        data = f.read()
+        f.close()
+        db = pymongo.MongoClient(uri)[ac]
+        table = db['glove']
+        item = []
+        for x in data.split('\n'):
+            if not '-' in x:
+                dic = {}
+                dic['name'] = x
+            else:
+                dic['no'] = x
+                item.append(dic)
+        for x in item:
+            if table.find_one({'name':x['name']}) == None:
+                table.insert(x)
+            else:
+                table.update({'name':x['name']},x)
 
-application = tornado.web.Application([(r'/callback',WebHookHandler),(r'/',DummyHandler)])
+application = tornado.web.Application([(r'/callback',WebHookHandler),(r'/init',DummyHandler)],{'Debug':True})
 
 if __name__ == '__main__':
     token = os.environ['Access_Token']
