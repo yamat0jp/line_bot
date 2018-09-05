@@ -31,12 +31,11 @@ class WebHookHandler(tornado.web.RequestHandler):
             return
         db = pymongo.MongoClient(uri)[ac]
         table = db['glove']
-        item = table.find_one({'no':no})
-        if item != None:
-            ans = item['name']
+        item = table.find({'no':re.compile(no)})
+        if item.count() == 1:
+            ans = item['name']+'\n'+item['no']
         else:
             ans = ''
-            item = table.find({'no':re.compile(no)})
             for x in item.sort('no'):
                 ans += x['no']+'\n'
             if ans == '':
