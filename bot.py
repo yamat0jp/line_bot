@@ -17,7 +17,7 @@ from linebot.models import TextSendMessage
 
 class WebHookHandler(tornado.web.RequestHandler):   
     def get(self):
-        self.write(self.main('SF'))
+        self.write(self.main('2'))
         
     def main(self,no):
         pz = pytz.timezone('Asia/Tokyo')
@@ -31,18 +31,17 @@ class WebHookHandler(tornado.web.RequestHandler):
             return
         db = pymongo.MongoClient(uri)[ac]
         table = db['glove']
-        item = table.find({'no':no})
-        if item.count() == 1:
-            x = table.find_one({'no':no})
-            ans = x['name']
-        elif item.count() == 0:
-            ans = ''
-            for x in table.find().sort('no'):
-                ans += x['no']+'\n'
+        item = table.find_one({'no':no})
+        if item != None:
+            ans = item['name']
         else:
+            ans = ''
             item = table.find({'no':re.compile(no)})
             for x in item.sort('no'):
                 ans += x['no']+'\n'
+            if ans == '':
+                for x in table.find().sort('no'):
+                    ans += x['no']+'\n'
         return ans
         
     def post(self):
@@ -62,7 +61,6 @@ class WebHookHandler(tornado.web.RequestHandler):
                     event.reply_token,
                     TextSendMessage(text=self.main(event.Message.text))
                 )
-        self.write(header)
         
 class DummyHandler(tornado.web.RequestHandler):
     def get(self):
