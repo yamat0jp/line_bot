@@ -25,10 +25,7 @@ class WebHookHandler(tornado.web.RequestHandler):
         t = now.hour
         w = now.weekday()
         if (w < 5)and(t >= 9)and(t < 16):
-            obj = {'type':'text','text':u'仕事中'}
-            j = json.dump(obj, ensure_ascii=False)
-            self.write(j)
-            return
+            return u'仕事中.'
         db = pymongo.MongoClient(uri)[ac]
         table = db['glove']
         item = table.find({'no':re.compile(no)})
