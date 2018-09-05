@@ -8,7 +8,8 @@ Created on Sat Sep  1 11:18:39 2018
 import tornado.ioloop
 import tornado.web
 import tornado.escape
-import json, os, hmac, base64, hashlib, pytz, pymongo, re
+import os, hmac, base64, hashlib, re
+import json, pytz, pymongo
 from datetime import datetime
 from linebot import LineBotApi, WebhookParser, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -17,7 +18,8 @@ from linebot.models import TextSendMessage
 
 class WebHookHandler(tornado.web.RequestHandler):   
     def get(self):
-        self.write(self.main('2'))
+        mes = self.get_argument('code','')
+        self.write(self.main(mes))
         
     def main(self,no):
         pz = pytz.timezone('Asia/Tokyo')
@@ -28,9 +30,10 @@ class WebHookHandler(tornado.web.RequestHandler):
             return u'仕事中.'
         db = pymongo.MongoClient(uri)[ac]
         table = db['glove']
-        item = table.find({'no':re.compile(no)})
+        item = table.find({'no':re.compile(no,re.IGNORECASE)})
         if item.count() == 1:
-            ans = item['name']+'\n'+item['no']
+            x = item[0]
+            ans = x['name']+'\n'+x['no']
         else:
             ans = ''
             for x in item.sort('no'):
