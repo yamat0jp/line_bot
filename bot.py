@@ -12,11 +12,14 @@ import json, os, hmac, base64, hashlib, pytz, pymongo, re
 from datetime import datetime
 from linebot import LineBotApi, WebhookParser, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot.models import TextSendMessage
 
 
 class WebHookHandler(tornado.web.RequestHandler):   
     def get(self):
+        self.write(self.main('SF'))
+        
+    def main(self,no):
         pz = pytz.timezone('Asia/Tokyo')
         now = datetime.now(pz)
         t = now.hour
@@ -28,23 +31,19 @@ class WebHookHandler(tornado.web.RequestHandler):
             return
         db = pymongo.MongoClient(uri)[ac]
         table = db['glove']
-        if table.find().count() == 0: 
-            table.insert_one({'name':u'リフレフィット','no':'SF'})
-        no = 'SF'
         item = table.find({'no':no})
         if item.count() == 1:
             x = table.find_one({'no':no})
-            dic = {x['name']:x['no']}
+            ans = x['name']
         elif item.count() == 0:
-            dic = {}
+            ans = ''
             for x in table.find().sort('no'):
-                dic[x['name']] = x['no']
+                ans += x['no']+'\n'
         else:
             item = table.find({'no':re.compile(no)})
-            dic = {}
             for x in item.sort('no'):
-                dic[x['name']] = x['no']
-        self.write(json.dump(dic, ensure_ascii=False))
+                ans += x['no']+'\n'
+        return ans
         
     def post(self):
         header = json.load(self.request.headers)
@@ -52,22 +51,17 @@ class WebHookHandler(tornado.web.RequestHandler):
         hash = hmac.new(header['X-LINE-SIGNATURE'].encode('utf-8'),
             body.encode('utf-8'), hashlib.sha256).digest()
         signature = base64.b64encode(hash)
-        '''
         try:
             events = webhook.parse(body, signature)
         except InvalidSignatureError:
             raise tornado.web.HTTPError(400)
             return
         for event in events:
-            if not isinstance(event, MessageEvent):
-                continue
-            if not isinstance(event.message, TextMessage):
-                continue
-            linebot.reply_message(
-                event.reply_token,
-                TextSendMessage(text=event.message.text)
-            )
-        '''
+            if (event['type'] == 'text')and(event['message']['type'] == 'text'):
+                linebot.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=self.main(event.Message.text))
+                )
         self.write(header)
         
 class DummyHandler(tornado.web.RequestHandler):
@@ -79,17 +73,15 @@ class DummyHandler(tornado.web.RequestHandler):
         table = db['glove']
         item = []
         for x in data.split('\n'):
-            if not '-' in x:
+            if x[0] == '@':
                 dic = {}
-                dic['name'] = x
+                dic['name'] = x[1:]
             else:
                 dic['no'] = x
                 item.append(dic)
+        table.remove()
         for x in item:
-            if table.find_one({'name':x['name']}) == None:
-                table.insert(x)
-            else:
-                table.update({'name':x['name']},x)
+            table.insert(x)
 
 application = tornado.web.Application([(r'/callback',WebHookHandler),(r'/init',DummyHandler)],{'Debug':True})
 
@@ -102,3 +94,4 @@ if __name__ == '__main__':
     webhook = WebhookParser(ch)  
     application.listen(5000)
     tornado.ioloop.IOLoop.instance().start()
+    
