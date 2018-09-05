@@ -34,15 +34,25 @@ class WebHookHandler(tornado.web.RequestHandler):
         if item.count() == 1:
             x = item[0]
             ans = x['name']+'\n'+x['no']
+        elif item.count() > 0:
+            ans = ''            
+            na = item[0]['name']
+            for x in item.sort('name'):
+                if x['name'] == na:
+                    ans += x['name']+'\n'+x['no']+'\n'
+                else:
+                    list = []                      
+                    for y in item:
+                        list.append(y['no'])
+                    ans = ''
+                    for y in sorted(list):
+                        ans += y+'\n'
+                    break
         else:
-            ans = ''
-            for x in item.sort('no'):
+            for x in table.find().sort('no'):
                 ans += x['no']+'\n'
-            if ans == '':
-                for x in table.find().sort('no'):
-                    ans += x['no']+'\n'
         return ans
-        
+            
     def post(self):
         header = json.load(self.request.headers)
         body = json.load(self.request.body)
