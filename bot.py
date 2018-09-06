@@ -14,6 +14,7 @@ from datetime import datetime
 from linebot import LineBotApi, WebhookParser, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import TextSendMessage
+from multiprocessing.connection import answer_challenge
 
 
 class WebHookHandler(tornado.web.RequestHandler):   
@@ -35,20 +36,21 @@ class WebHookHandler(tornado.web.RequestHandler):
             x = item[0]
             ans = x['name']+'\n'+x['no']
         elif item.count() > 1:
-            ans = ''            
-            na = item[0]['name']
-            for x in item.sort('name'):
-                if x['name'] == na:
+            ans = ''    
+            obj = list(item)
+            list1 = sorted(obj, key=lambda k:k['name'])
+            for x in list1:
+                if x['name'] == list1[0]['name']:
                     ans += x['name']+'\n'+x['no']+'\n'
                 else:
-                    obj = []                      
-                    for y in item:
-                        obj.append(y['no'])
-                    ans = ''
-                    for y in sorted(obj):
-                        ans += y+'\n'
                     break
+            else:
+                return ans         
+            ans = ''             
+            for x in sorted(list1, key=lambda k:k['no']):
+                ans += x['no']+'\n'
         else:
+            ans = ''
             for x in table.find().sort('no'):
                 ans += x['no']+'\n'
         return ans
