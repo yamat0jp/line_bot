@@ -34,18 +34,18 @@ class WebHookHandler(tornado.web.RequestHandler):
         if item.count() == 1:
             x = item[0]
             ans = x['name']+'\n'+x['no']
-        elif item.count() > 0:
+        elif item.count() > 1:
             ans = ''            
             na = item[0]['name']
             for x in item.sort('name'):
                 if x['name'] == na:
                     ans += x['name']+'\n'+x['no']+'\n'
                 else:
-                    list = []                      
+                    obj = []                      
                     for y in item:
-                        list.append(y['no'])
+                        obj.append(y['no'])
                     ans = ''
-                    for y in sorted(list):
+                    for y in sorted(obj):
                         ans += y+'\n'
                     break
         else:
@@ -90,7 +90,7 @@ class DummyHandler(tornado.web.RequestHandler):
         for x in item:
             table.insert(x)
 
-application = tornado.web.Application([(r'/callback',WebHookHandler),(r'/init',DummyHandler)],{'Debug':True})
+application = tornado.web.Application([(r'/callback',WebHookHandler),(r'/init',DummyHandler)])
 
 if __name__ == '__main__':
     token = os.environ['Access_Token']
