@@ -99,8 +99,9 @@ if __name__ == '__main__':
     ch = os.environ['Channel_Secret']
     uri = os.environ['MONGODB_URI']
     ac = os.environ['ACCOUNT']
+    port = os.environ.get['PORT',5000]
     linebot = LineBotApi(token)
     webhook = WebhookParser(ch)  
-    application.listen(5000)
+    application.listen(port)
     tornado.ioloop.IOLoop.instance().start()
     
