@@ -45,12 +45,12 @@ class WebHookHandler(tornado.web.RequestHandler):
                     break
             else:
                 return ans       
-            ans = self.list(sorted(list1, key=lambda k:k['no']))
+            ans = self.itr(sorted(list1, key=lambda k:k['no']))
         else:
-            ans = self.list(table.find().sort('no'))
+            ans = self.itr(table.find().sort('no'))
         return ans
     
-    def list(self,item):
+    def itr(self,item):
         i = 0
         ans = ''
         for x in item:
