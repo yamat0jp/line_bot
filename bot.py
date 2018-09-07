@@ -56,13 +56,14 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
             
     def post(self):
-        header = json.load(self.request.headers)
-        body = json.load(self.request.body)
-        hashid = hmac.new(header['X-LINE-SIGNATURE'].encode('utf-8'),
+        header = tornado.escape.json_decode(self.request.headers)
+        body = tornado.escape.json_decode(self.request.body)
+        hashid = hmac.new(header['X-Line-Signature'].encode('utf-8'),
             body.encode('utf-8'), hashlib.sha256).digest()
         signature = base64.b64encode(hashid)
+        handle = WebhookHandler(ch)
         try:
-            events = webhook.parse(body, signature)
+            events = handle.handle(body, signature)
         except InvalidSignatureError:
             raise tornado.web.HTTPError(400)
             return
