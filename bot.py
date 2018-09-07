@@ -46,8 +46,13 @@ class WebHookHandler(tornado.web.RequestHandler):
             else:
                 return ans         
             ans = ''             
+            i = 0
             for x in sorted(list1, key=lambda k:k['no']):
-                ans += x['no']+'\n'
+                ans += x['no']
+                if i == 2:
+                    ans += '/n'
+                    i = 0
+                i += 1
         else:
             ans = ''
             for x in table.find().sort('no'):
