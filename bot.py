@@ -8,7 +8,7 @@ Created on Sat Sep  1 11:18:39 2018
 import tornado.ioloop
 import tornado.web
 import tornado.escape
-import os, hmac, base64, hashlib, re
+import os, hmac, base64, hashlib, re, json
 import pytz, pymongo
 from datetime import datetime
 from linebot import LineBotApi, WebhookParser
@@ -56,7 +56,7 @@ class WebHookHandler(tornado.web.RequestHandler):
             
     def post(self):
         header = self.request.headers.get('X-Line-Signature','')
-        body = tornado.escape.json_decode(self.request.body)
+        body = json.load(self.request.body)
         '''
         hashid = hmac.new(header.get('X-Line-Signature'),
             body.decode('utf-8'), hashlib.sha256).digest()
@@ -74,7 +74,7 @@ class WebHookHandler(tornado.web.RequestHandler):
                     TextSendMessage(text=self.main(event.Message.text))
                 )
         '''
-        event = body
+        event = body['Body']
         linebot.reply_message(event['replyToken'],text=self.main(event['message']['text']))
         
 class DummyHandler(tornado.web.RequestHandler):
