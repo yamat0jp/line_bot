@@ -74,7 +74,7 @@ class WebHookHandler(tornado.web.RequestHandler):
                     TextSendMessage(text=self.main(event.Message.text))
                 )
         '''
-        event = body
+        event = body['body']
         linebot.reply_message(event['replytoken'],text=self.main(event['message']['text']))
         
 class DummyHandler(tornado.web.RequestHandler):
