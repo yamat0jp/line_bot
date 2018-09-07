@@ -57,7 +57,7 @@ class WebHookHandler(tornado.web.RequestHandler):
     def post(self):
         events = tornado.escape.json_decode(self.request)
         for event in events:
-            if event['replyToken'] != None:
+            if 'replyToken' in event:
                 linebot.reply_message(
                     event['replyToken'],
                     TextSendMessage(text=self.main('RR')))
