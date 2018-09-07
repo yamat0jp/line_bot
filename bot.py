@@ -56,7 +56,7 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
             
     def post(self):
-        pass
+        self.write('hello world')
     '''
         header = json.load(self.request.headers)
         body = json.load(self.request.body)
