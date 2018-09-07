@@ -55,9 +55,10 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
             
     def post(self):
+        print(self.request.body)
+        '''
         header = self.request.headers.get('X-Line-Signature','')
         body = json.load(self.request.body)
-        '''
         hashid = hmac.new(header.get('X-Line-Signature'),
             body.decode('utf-8'), hashlib.sha256).digest()
         signature = base64.b64encode(hashid)
@@ -74,8 +75,6 @@ class WebHookHandler(tornado.web.RequestHandler):
                     TextSendMessage(text=self.main(event.Message.text))
                 )
         '''
-        event = body['Body']
-        linebot.reply_message(event['replyToken'],text=self.main(event['message']['text']))
         
 class DummyHandler(tornado.web.RequestHandler):
     def get(self):
