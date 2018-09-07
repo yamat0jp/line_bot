@@ -55,8 +55,14 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
             
     def post(self):
-        print(self.request.body)
-        '''
+        events = tornado.escape.json_decode(self.request)
+        for event in events:
+            if event['replyToken'] != None:
+                linebot.reply_message(
+                    event['replyToken'],
+                    TextSendMessage(text=self.main('RR')))
+        return
+    
         header = self.request.headers.get('X-Line-Signature','')
         body = json.load(self.request.body)
         hashid = hmac.new(header.get('X-Line-Signature'),
@@ -64,7 +70,7 @@ class WebHookHandler(tornado.web.RequestHandler):
         signature = base64.b64encode(hashid)
         parser = WebhookParser(ch)
         try:
-            events = parser.parse(body, header)
+            events = parser.parse(body, signature)
         except InvalidSignatureError:
             raise tornado.web.HTTPError(400)
             return
@@ -74,7 +80,6 @@ class WebHookHandler(tornado.web.RequestHandler):
                     event.reply_token,
                     TextSendMessage(text=self.main(event.Message.text))
                 )
-        '''
         
 class DummyHandler(tornado.web.RequestHandler):
     def get(self):
