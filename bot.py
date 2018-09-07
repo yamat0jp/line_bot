@@ -55,8 +55,8 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
             
     def post(self):
-        header = self.request.headers
-        body = self.request.body.decode('utf-8')
+        header = self.request.headers.get('X-Line-Signature')
+        body = tornado.escape.json_decode(self.request.body)
         '''
         hashid = hmac.new(header.get('X-Line-Signature'),
             body.decode('utf-8'), hashlib.sha256).digest()
