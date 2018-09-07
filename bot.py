@@ -99,7 +99,7 @@ if __name__ == '__main__':
     ch = os.environ['Channel_Secret']
     uri = os.environ['MONGODB_URI']
     ac = os.environ['ACCOUNT']
-    port = int(os.environ.get('PORT',5000))
+    port = int(os.environ.get('PORT',5000))#important in heroku
     linebot = LineBotApi(token)
     webhook = WebhookParser(ch)  
     application.listen(port)
