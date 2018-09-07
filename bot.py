@@ -57,14 +57,14 @@ class WebHookHandler(tornado.web.RequestHandler):
             
     def post(self):
         signature = self.request.headers['X-Line-Signature']
-        body = self.request.body
-        handler = WebhookHandler(ch)
+        dic = tornado.escape.json_decode(self.request.body)      
+        parser = WebhookParser(ch)
         try:
-            handler.handle(body, signature)
+            parser.parse(dic, signature)
         except InvalidSignatureError:
             tornado.web.HTTPError(404)
-        dict = tornado.escape.json_decode(self.request.body)
-        for event in dict['events']:
+            return
+        for event in dic['events']:
             if 'replyToken' in event:
                 linebot.reply_message(
                     event['replyToken'],
