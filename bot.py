@@ -8,7 +8,7 @@ Created on Sat Sep  1 11:18:39 2018
 import tornado.ioloop
 import tornado.web
 import tornado.escape
-import os, hmac, base64, hashlib, re, json
+import os, hmac, base64, hashlib, re
 import pytz, pymongo
 from datetime import datetime
 from linebot import LineBotApi, WebhookParser
@@ -55,8 +55,8 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
             
     def post(self):
-        events = tornado.escape.json_decode(self.request)
-        for event in events['events']:
+        j = tornado.escape.json_decode(self.request.body)
+        for event in j['events']:
             if 'replyToken' in event:
                 linebot.reply_message(
                     event['replyToken'],
