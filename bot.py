@@ -56,6 +56,8 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
             
     def post(self):
+        pass
+    '''
         header = json.load(self.request.headers)
         body = json.load(self.request.body)
         hash = hmac.new(header['X-LINE-SIGNATURE'].encode('utf-8'),
@@ -72,6 +74,7 @@ class WebHookHandler(tornado.web.RequestHandler):
                     event.reply_token,
                     TextSendMessage(text=self.main(event.Message.text))
                 )
+    '''
         
 class DummyHandler(tornado.web.RequestHandler):
     def get(self):
