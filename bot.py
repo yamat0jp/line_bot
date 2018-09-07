@@ -14,6 +14,7 @@ from datetime import datetime
 from linebot import LineBotApi, WebhookParser
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import TextSendMessage
+from linebot.webhook import WebhookHandler
 
 
 class WebHookHandler(tornado.web.RequestHandler):   
@@ -55,8 +56,15 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
             
     def post(self):
-        j = tornado.escape.json_decode(self.request.body)
-        for event in j['events']:
+        signature = self.request.headers['X-Line-Signature']
+        body = self.request.body
+        handler = WebhookHandler(ch)
+        try:
+            handler.handle(body, signature)
+        except InvalidSignatureError:
+            tornado.web.HTTPError(404)
+        dict = tornado.escape.json_decode(self.request.body)
+        for event in dict['events']:
             if 'replyToken' in event:
                 linebot.reply_message(
                     event['replyToken'],
