@@ -56,13 +56,11 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
             
     def post(self):
-        self.write('hello world')
-    '''
         header = json.load(self.request.headers)
         body = json.load(self.request.body)
-        hash = hmac.new(header['X-LINE-SIGNATURE'].encode('utf-8'),
+        hashid = hmac.new(header['X-LINE-SIGNATURE'].encode('utf-8'),
             body.encode('utf-8'), hashlib.sha256).digest()
-        signature = base64.b64encode(hash)
+        signature = base64.b64encode(hashid)
         try:
             events = webhook.parse(body, signature)
         except InvalidSignatureError:
@@ -74,7 +72,6 @@ class WebHookHandler(tornado.web.RequestHandler):
                     event.reply_token,
                     TextSendMessage(text=self.main(event.Message.text))
                 )
-    '''
         
 class DummyHandler(tornado.web.RequestHandler):
     def get(self):
