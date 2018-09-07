@@ -44,21 +44,23 @@ class WebHookHandler(tornado.web.RequestHandler):
                 else:
                     break
             else:
-                return ans         
-            ans = ''             
-            i = 0
-            for x in sorted(list1, key=lambda k:k['no']):
-                ans += x['no']
-                if i == 2:
-                    ans += '/n'
-                    i = 0
-                i += 1
+                return ans       
+            ans = self.list(sorted(list1, key=lambda k:k['no']))
         else:
-            ans = ''
-            for x in table.find().sort('no'):
-                ans += x['no']+'\n'
+            ans = self.list(table.find().sort('no'))
         return ans
-            
+    
+    def list(self,item):
+        i = 0
+        ans = ''
+        for x in item:
+            ans += x['no']
+            if i == 2:
+                ans += '\n'
+                i = 0
+            i += 1
+        return ans
+                        
     def post(self):
         '''
         signature = self.request.headers['X-Line-Signature']
