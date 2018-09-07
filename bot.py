@@ -58,7 +58,7 @@ class WebHookHandler(tornado.web.RequestHandler):
         header = self.request.headers
         if header.get('Content-Type','') == 'application/json':
             body = tornado.escape.json_decode(self.request.body)
-        hashid = hmac.new(header['X-Line-Signature'].encode('utf-8'),
+        hashid = hmac.new(header.get('X-Line-Signature').encode('utf-8'),
             body.encode('utf-8'), hashlib.sha256).digest()
         signature = base64.b64encode(hashid)
         handle = WebhookHandler(ch)
