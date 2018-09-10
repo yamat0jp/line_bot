@@ -48,6 +48,7 @@ class WebHookHandler(tornado.web.RequestHandler):
             ans = self.itr(sorted(list1, key=lambda k:k['no']))
         else:
             ans = self.itr(table.find().sort('no'))
+            ans = '-*-glove list-*-\n'+ans
         return ans
     
     def itr(self,item):
