@@ -51,14 +51,9 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
     
     def itr(self,item):
-        i = 0
         ans = ''
         for x in item:
-            ans += '*'+x['no']+'*  '
-            if i == 2:
-                ans += '\n'
-                i = 0
-            i += 1
+            ans += '【'+x['no']+'】 '
         return ans
                         
     def post(self):
