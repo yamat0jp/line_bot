@@ -29,8 +29,7 @@ class WebHookHandler(tornado.web.RequestHandler):
         w = now.weekday()
         if (w < 5)and(t >= 9)and(t < 16):
             return u'仕事中.'
-        #table = self.users(self.name)
-        table = pymongo.MongoClient(uri)[ac]['glove']
+        table,na = self.users(self.name)
         item = table.find({'no':re.compile(no,re.IGNORECASE)})
         if item.count() == 1:
             x = item[0]
@@ -49,7 +48,7 @@ class WebHookHandler(tornado.web.RequestHandler):
             ans = self.itr(sorted(list1, key=lambda k:k['no']))
         else:
             ans = self.itr(table.find().sort('no'))
-            ans = '-*-glove list-*-\n'+ans
+            ans = '-*-'+na+' list-*-\n'+ans
         return ans
     
     def itr(self,item):
@@ -74,10 +73,11 @@ class WebHookHandler(tornado.web.RequestHandler):
         db = client['users']
         item = db.find_one({'name':name})
         if item:
-            return client[item['dbname']]
+            x = item['dbname']
+            return client[x], x
         else:
             db.insert({'name':name,'dbname':'glove'})
-            return client['glove']
+            return client['glove'], 'glove'
                 
     def post(self):
         '''
