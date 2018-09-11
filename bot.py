@@ -61,17 +61,17 @@ class WebHookHandler(tornado.web.RequestHandler):
         client = pymongo.MongoClient(uri)[ac]
         if dbname in client.tables():
             db = client['users']
-            item = db.find_one(name)
+            item = db.find_one({'name':name})
             if item['dbname'] == dbname:
                 return False
             else:
-                item.update({'user':name,'dbname':dbname})
+                db.update({'user':name,'dbname':dbname})
                 return True
     
     def users(self,name):
         client = pymongo.MongoClient(uri)[ac]
         db = client['users']
-        item = db.find_one(name)
+        item = db.find_one({'name':name})
         if item:
             return client[item['dbname']]
         else:
@@ -114,7 +114,8 @@ class DummyHandler(tornado.web.RequestHandler):
             self.main(x[2:-4],data)
     
     def main(self,name,data):
-        table = self.db[name]
+        if name == 'requirements':
+            return
         item = []
         for x in data.split('\n'):
             if x[0] == '@':
@@ -123,6 +124,7 @@ class DummyHandler(tornado.web.RequestHandler):
             else:
                 dic['no'] = x
                 item.append(dic)
+        table = self.db[name]
         table.remove()
         for x in item:
             table.insert(x)
