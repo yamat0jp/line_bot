@@ -117,10 +117,10 @@ class DummyHandler(tornado.web.RequestHandler):
             return
         item = []
         for x in data.split('\n'):
-            if x[0] == '@':
+            if len(x) > 0 and x[0] == '@':
                 dic = {}
                 dic['name'] = x[1:]
-            else:
+            elif 'name' in dic.keys():
                 dic['no'] = x
                 item.append(dic)
         table = self.db[name]
