@@ -59,7 +59,7 @@ class WebHookHandler(tornado.web.RequestHandler):
     
     def setting(self,name,dbname):
         client = pymongo.MongoClient(uri)[ac]
-        if dbname in client.tables():
+        if dbname in client.collection_names(include_system_collections=False):
             db = client['users']
             item = db.find_one({'name':name})
             if item['dbname'] == dbname:
