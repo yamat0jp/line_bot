@@ -18,18 +18,18 @@ from linebot.models import TextSendMessage
 
 class WebHookHandler(tornado.web.RequestHandler):   
     def get(self):
-        mes = self.get_argument('code','')
-        self.name = 'glove'
+        mes = self.get_argument('code', '')
+        self.uid = ''
         self.write(self.main(mes))
         
-    def main(self,no):
+    def main(self, no):
         pz = pytz.timezone('Asia/Tokyo')
         now = datetime.now(pz)
         t = now.hour
         w = now.weekday()
         if (w < 5)and(t >= 9)and(t < 16):
             return u'仕事中.'
-        table,na = self.users(self.name)
+        table, na = self.users
         item = table.find({'no':re.compile(no,re.IGNORECASE)})
         if item.count() == 1:
             x = item[0]
@@ -51,32 +51,32 @@ class WebHookHandler(tornado.web.RequestHandler):
             ans = '-*-'+na+' list-*-\n'+ans
         return ans
     
-    def itr(self,item):
+    def itr(self, item):
         ans = ''
         for x in item:
             ans += '【'+x['no']+'】 '
         return ans
     
-    def setting(self,name,dbname):
+    def setting(self, dbname):
         client = pymongo.MongoClient(uri)[ac]
         if dbname in client.collection_names(include_system_collections=False):
             db = client['users']
-            item = db.find_one({'name':name})
+            item = db.find_one({'name':self.uid})
             if item['dbname'] == dbname:
                 return False
             else:
-                db.update({'user':name,'dbname':dbname})
+                db.update({'user':self.uid, 'dbname':dbname})
                 return True
-    
-    def users(self,name):
+
+    def users(self):
         client = pymongo.MongoClient(uri)[ac]
         db = client['users']
-        item = db.find_one({'name':name})
+        item = db.find_one({'name':self.uid})
         if item:
             x = item['dbname']
             return client[x], x
         else:
-            db.insert({'name':name,'dbname':'glove'})
+            db.insert({'name':self.uid, 'dbname':'glove'})
             return client['glove'], 'glove'
                 
     def post(self):
@@ -93,15 +93,13 @@ class WebHookHandler(tornado.web.RequestHandler):
         dic = tornado.escape.json_decode(self.request.body)              
         for event in dic['events']:
             if 'replyToken' in event:
-                x = event['replyToken']
-                y = event['message']['text']
-                if self.setting(x,y):
-                    self.name = y
-                    linebot.reply_message(x,
+                x = event['message']['text']
+                self.uid = event['source']['userId']
+                if self.setting(x):
+                    linebot.reply_message(event['replyToken'],
                         TextSendMessage(text=u'設定完了.'))
                 else:
-                    self.name = x
-                    linebot.reply_message(x,
+                    linebot.reply_message(event['replyToken'],
                         TextSendMessage(text=self.main(x))
                     )
         
@@ -112,9 +110,9 @@ class DummyHandler(tornado.web.RequestHandler):
             f = open(x)
             data = f.read()
             f.close()
-            self.main(x[2:-4],data)
+            self.main(x[2:-4], data)
     
-    def main(self,name,data):
+    def main(self, name, data):
         if name == 'requirements':
             return
         item = []
