@@ -121,7 +121,7 @@ class DummyHandler(tornado.web.RequestHandler):
             if len(x) > 0 and x[0] == '@':
                 dic = {}
                 dic['name'] = x[1:]
-            elif not dic:
+            elif dic:
                 dic['no'] = x
                 item.append(dic)
         table = self.db[name]
