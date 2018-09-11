@@ -29,7 +29,7 @@ class WebHookHandler(tornado.web.RequestHandler):
         w = now.weekday()
         if (w < 5)and(t >= 9)and(t < 16):
             return u'仕事中.'
-        table, na = self.users
+        table, na = self.users()
         item = table.find({'no':re.compile(no,re.IGNORECASE)})
         if item.count() == 1:
             x = item[0]
