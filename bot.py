@@ -29,7 +29,8 @@ class WebHookHandler(tornado.web.RequestHandler):
         w = now.weekday()
         if (w < 5)and(t >= 9)and(t < 16):
             return u'仕事中.'
-        table = self.users(self.name)
+        #table = self.users(self.name)
+        table = pymongo.MongoClient(uri)[ac]['glove']
         item = table.find({'no':re.compile(no,re.IGNORECASE)})
         if item.count() == 1:
             x = item[0]
