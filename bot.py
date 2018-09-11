@@ -8,7 +8,7 @@ Created on Sat Sep  1 11:18:39 2018
 import tornado.ioloop
 import tornado.web
 import tornado.escape
-import os, re
+import os, re, glob
 import pytz, pymongo
 from datetime import datetime
 from linebot import LineBotApi, WebhookParser
@@ -19,6 +19,7 @@ from linebot.models import TextSendMessage
 class WebHookHandler(tornado.web.RequestHandler):   
     def get(self):
         mes = self.get_argument('code','')
+        self.name = 'glove'
         self.write(self.main(mes))
         
     def main(self,no):
@@ -28,8 +29,7 @@ class WebHookHandler(tornado.web.RequestHandler):
         w = now.weekday()
         if (w < 5)and(t >= 9)and(t < 16):
             return u'仕事中.'
-        db = pymongo.MongoClient(uri)[ac]
-        table = db['glove']
+        table = self.users(self.name)
         item = table.find({'no':re.compile(no,re.IGNORECASE)})
         if item.count() == 1:
             x = item[0]
@@ -56,7 +56,28 @@ class WebHookHandler(tornado.web.RequestHandler):
         for x in item:
             ans += '【'+x['no']+'】 '
         return ans
-                        
+    
+    def setting(self,name,dbname):
+        client = pymongo.MongoClient(uri)[ac]
+        if dbname in client.tables():
+            db = client['users']
+            item = db.find_one(name)
+            if item['dbname'] == dbname:
+                return False
+            else:
+                item.update({'user':name,'dbname':dbname})
+                return True
+    
+    def users(self,name):
+        client = pymongo.MongoClient(uri)[ac]
+        db = client['users']
+        item = db.find_one(name)
+        if item:
+            return client[item['dbname']]
+        else:
+            db.insert({'name':name,'dbname':'glove'})
+            return client['glove']
+                
     def post(self):
         '''
         signature = self.request.headers['X-Line-Signature']
@@ -71,18 +92,29 @@ class WebHookHandler(tornado.web.RequestHandler):
         dic = tornado.escape.json_decode(self.request.body)              
         for event in dic['events']:
             if 'replyToken' in event:
-                linebot.reply_message(
-                    event['replyToken'],
-                    TextSendMessage(text=self.main(event['message']['text']))
-                )
+                x = event['replyToken']
+                y = event['message']['text']
+                if self.setting(x,y):
+                    self.name = y
+                    linebot.reply_message(x,
+                        TextSendMessage(text=u'設定完了.'))
+                else:
+                    self.name = x
+                    linebot.reply_message(x,
+                        TextSendMessage(text=self.main(x))
+                    )
         
 class DummyHandler(tornado.web.RequestHandler):
-    def get(self):
-        f = open('data.txt')
-        data = f.read()
-        f.close()
-        db = pymongo.MongoClient(uri)[ac]
-        table = db['glove']
+    def get(self):        
+        self.db = pymongo.MongoClient(uri)[ac]
+        for x in glob.glob('./*.txt'):
+            f = open(x)
+            data = f.read()
+            f.close()
+            self.main(x[2:-4],data)
+    
+    def main(self,name,data):
+        table = self.db[name]
         item = []
         for x in data.split('\n'):
             if x[0] == '@':
