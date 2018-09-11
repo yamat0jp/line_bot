@@ -53,14 +53,10 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
     
     def setting(self, dbname):
-        client = pymongo.MongoClient(uri)[ac]
-        if dbname in client.collection_names(include_system_collections=False):
-            db = client['users']
+        if dbname in self.database.collection_names(include_system_collections=False):
+            db = self.database['users']
             item = db.find_one({'name':self.uid})
-            if not item:
-                db.insert({'name':self.uid, 'dbname':dbname})
-                return True
-            elif item['dbname'] == dbname:
+            if item['dbname'] == dbname:
                 return False
             else:
                 db.update({'name':self.uid}, {'name':self.uid, 'dbname':dbname})
@@ -68,16 +64,11 @@ class WebHookHandler(tornado.web.RequestHandler):
         return False
 
     def users(self):
-        client = pymongo.MongoClient(uri)[ac]
-        db = client['users']
+        db = self.database['users']
         item = db.find_one({'name':self.uid})
-        if item:
-            x = item['dbname']
-            return client[x], x
-        else:
-            db.insert({'name':self.uid, 'dbname':'glove'})
-            return client['glove'], 'glove'
-                
+        x = item['dbname']
+        return self.database[x], x
+                          
     def post(self):
         '''
         signature = self.request.headers['X-Line-Signature']
@@ -91,9 +82,18 @@ class WebHookHandler(tornado.web.RequestHandler):
         '''
         dic = tornado.escape.json_decode(self.request.body)              
         for event in dic['events']:
-            if 'replyToken' in event:
-                x = event['message']['text']
+            if 'replyToken' in event.keys():
                 self.uid = event['source']['userId']
+                self.database = pymongo.MongoClient(uri)[ac]                
+                if event['type'] == 'unfollow':
+                    self.database['users'].remove({'name':self.uid})
+                    return
+                elif event['type'] == 'join':
+                    db = self.database['users']
+                    if not db.find_one({'name':self.uid}):
+                        db.insert({'name':self.uid, 'dbname':'glove'})
+                    return
+                x = event['message']['text']                
                 if self.setting(x):
                     linebot.reply_message(event['replyToken'],
                         TextSendMessage(text=u'設定完了.'))
