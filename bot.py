@@ -63,7 +63,7 @@ class WebHookHandler(tornado.web.RequestHandler):
             elif item['dbname'] == dbname:
                 return False
             else:
-                db.update({'user':self.uid, 'dbname':dbname})
+                db.update({'user':self.uid}, {'user':self.uid, 'dbname':dbname})
                 return True
         return False
 
