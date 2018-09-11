@@ -116,6 +116,7 @@ class DummyHandler(tornado.web.RequestHandler):
         if name == 'requirements':
             return
         item = []
+        dic = None
         for x in data.split('\n'):
             if len(x) > 0 and x[0] == '@':
                 dic = {}
