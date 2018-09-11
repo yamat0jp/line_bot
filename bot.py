@@ -53,6 +53,7 @@ class WebHookHandler(tornado.web.RequestHandler):
         return ans
     
     def setting(self, dbname):
+        dbname = dbname.lower()
         if dbname in self.database.collection_names(include_system_collections=False):
             db = self.database['users']
             item = db.find_one({'name':self.uid})
