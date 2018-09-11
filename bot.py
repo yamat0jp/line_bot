@@ -16,12 +16,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import TextSendMessage
 
 
-class WebHookHandler(tornado.web.RequestHandler):   
-    def get(self):
-        mes = self.get_argument('code', '')
-        self.uid = ''
-        self.write(self.main(mes))
-        
+class WebHookHandler(tornado.web.RequestHandler):        
     def main(self, no):
         pz = pytz.timezone('Asia/Tokyo')
         now = datetime.now(pz)
@@ -64,11 +59,13 @@ class WebHookHandler(tornado.web.RequestHandler):
             item = db.find_one({'name':self.uid})
             if not item:
                 db.insert({'user':self.uid, 'dbname':dbname})
+                return True
             elif item['dbname'] == dbname:
                 return False
             else:
                 db.update({'user':self.uid, 'dbname':dbname})
                 return True
+        return False
 
     def users(self):
         client = pymongo.MongoClient(uri)[ac]
