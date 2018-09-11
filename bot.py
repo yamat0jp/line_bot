@@ -62,7 +62,9 @@ class WebHookHandler(tornado.web.RequestHandler):
         if dbname in client.collection_names(include_system_collections=False):
             db = client['users']
             item = db.find_one({'name':self.uid})
-            if item['dbname'] == dbname:
+            if not item:
+                db.insert({'user':self.id, 'dbname':dbname})
+            elif item['dbname'] == dbname:
                 return False
             else:
                 db.update({'user':self.uid, 'dbname':dbname})
