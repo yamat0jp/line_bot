@@ -54,8 +54,10 @@ class WebHookHandler(tornado.web.RequestHandler):
     
     def help(self):
         s = '-*-database names-*-\n'
-        for x in self.database.collection_names(include_system_collections=True):
-            s += x+'\n'
+        out = ['objectlabs-system','objectlabs-system.admin.collections','users']
+        for x in self.database.collection_names(include_system_collections=False):
+            if not x in out:
+                s += x+'\n'
         return s
     
     def setting(self, dbname):
