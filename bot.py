@@ -54,7 +54,7 @@ class WebHookHandler(tornado.web.RequestHandler):
     
     def help(self):
         s = '-*-database names-*-\n'
-        for x in self.database.collection_names(include_system_collections=False):
+        for x in self.database.collection_names(include_system_collections=True):
             s += x+'\n'
         return s
     
