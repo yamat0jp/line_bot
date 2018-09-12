@@ -52,6 +52,12 @@ class WebHookHandler(tornado.web.RequestHandler):
             ans += '【'+x['no']+'】 '
         return ans
     
+    def help(self):
+        s = '-*-database names-*-\n'
+        for x in self.database.collection_names(include_system_collections=False):
+            s += x+'\n'
+        return s
+    
     def setting(self, dbname):
         dbname = dbname.lower()
         if dbname in self.database.collection_names(include_system_collections=False):
@@ -98,6 +104,10 @@ class WebHookHandler(tornado.web.RequestHandler):
                 if self.setting(x):
                     linebot.reply_message(event['replyToken'],
                         TextSendMessage(text=u'設定完了.'))
+                elif x == '?':
+                    linebot.reply_message(event['replyToken'],
+                        TextSendMessage(text=self.help())
+                    )
                 else:
                     linebot.reply_message(event['replyToken'],
                         TextSendMessage(text=self.main(x))
